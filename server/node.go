@@ -154,7 +154,7 @@ func BootstrapCluster(clusterID string, engine storage.Engine) (
 	}
 
 	// Write default configs to local DB.
-	if err := kv.BootstrapConfigs(localDB); err != nil {
+	if err := kv.BootstrapConfigs(localDB, clusterID); err != nil {
 		return nil, err
 	}
 

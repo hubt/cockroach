@@ -49,7 +49,7 @@ func startServer() *kvTestServer {
 			panic(err)
 		}
 		localDB.AddStore(store)
-		BootstrapConfigs(localDB)
+		BootstrapConfigs(localDB, "cluster-1")
 		server.db = localDB
 		server.rest = NewRESTServer(server.db)
 		server.httpServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

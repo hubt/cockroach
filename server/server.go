@@ -111,6 +111,7 @@ type server struct {
 	kvREST         *kv.RESTServer
 	node           *Node
 	admin          *adminServer
+	stats          *statsServer
 	structuredDB   *structured.DB
 	structuredREST *structured.RESTServer
 	httpListener   *net.Listener // holds http endpoint information
@@ -241,6 +242,7 @@ func newServer() (*server, error) {
 	s.kvREST = kv.NewRESTServer(s.kvDB)
 	s.node = NewNode(s.kvDB, s.gossip)
 	s.admin = newAdminServer(s.kvDB)
+	s.stats = newStatsServer(s.kvDB)
 	s.structuredDB = structured.NewDB(s.kvDB)
 	s.structuredREST = structured.NewRESTServer(s.structuredDB)
 
@@ -295,7 +297,18 @@ func (s *server) start(engines []storage.Engine, selfBootstrap bool) error {
 }
 
 func (s *server) initHTTP() {
+	// TODO(shawn) pretty "/" landing page
 	s.mux.HandleFunc(adminKeyPrefix+"healthz", s.admin.handleHealthz)
+
+	// Stats endpoints:
+	// XXX how do you nest http Muxes?
+	s.mux.HandleFunc(statsKeyPrefix, s.stats.handleStats)
+	s.mux.HandleFunc(statsNodesKeyPrefix, s.stats.handleNodeStats)
+	s.mux.HandleFunc(statsGossipKeyPrefix, s.stats.handleGossipStats)
+	s.mux.HandleFunc(statsEnginesKeyPrefix, s.stats.handleEngineStats)
+	s.mux.HandleFunc(statsTransactionsKeyPrefix, s.stats.handleTransactionStats)
+	s.mux.HandleFunc(statsLocalKeyPrefix, s.stats.handleLocalStats)
+
 	s.mux.HandleFunc(zoneKeyPrefix, s.admin.handleZoneAction)
 	s.mux.HandleFunc(kv.KVKeyPrefix, s.kvREST.HandleAction)
 	s.mux.HandleFunc(structured.StructuredKeyPrefix, s.structuredREST.HandleAction)

@@ -112,9 +112,11 @@ func BootstrapRangeDescriptor(db DB, desc storage.RangeDescriptor) error {
 // prefix, meaning they apply to the entire database. Permissions are
 // granted to all users and the zone requires three replicas with no
 // other specifications.
-func BootstrapConfigs(db DB) error {
+func BootstrapConfigs(db DB, clusterID string) error {
 	// Accounting config.
-	acctConfig := &storage.AcctConfig{}
+	acctConfig := &storage.AcctConfig{
+		ClusterID: clusterID,
+	}
 	if err := PutI(db, storage.MakeKey(storage.KeyConfigAccountingPrefix, storage.KeyMin), acctConfig); err != nil {
 		return err
 	}
