@@ -1,4 +1,5 @@
 GO ?= go
+DOCKER ?= docker
 
 GOPATH  := $(CURDIR)/_vendor:$(GOPATH)
 ROCKSDB := $(CURDIR)/_vendor/rocksdb
@@ -32,6 +33,13 @@ testrace: rocksdb
 
 coverage: rocksdb
 	$(CGO_FLAGS) $(GO) test -cover -run $(TESTS) $(PKG) $(TESTFLAGS)
+
+dockerbuild: 
+	$(DOCKER) build -t cockroach:build .
+	@echo Docker build complete use the command to start the build server
+	@echo 
+	@echo $(DOCKER) run --rm --name crbuild --hostname crbuild -t -i -v `pwd`:/go/src/github.com/cockroachdb/cockroach cockroach:build
+	@echo 
 
 clean:
 	$(GO) clean
